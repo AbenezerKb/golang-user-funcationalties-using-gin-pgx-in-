@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"gin-exercise/controller"
 	"gin-exercise/middlewares"
 	"gin-exercise/service"
@@ -35,12 +34,10 @@ func main() {
 	//setUptLogOutPut()
 	server := gin.New()
 	server.Use(gin.Recovery(), middlewares.Logger()) //, ginDumb.Dumb() , middlewares.AuthorizeJWT()
-	fmt.Println("working till here 1")
+
 	//get users list
 	server.GET("/userslist", func(ctx *gin.Context) {
-		fmt.Println("working till here 2")
 		ctx.JSON(200, controll.FindAll())
-		fmt.Println("working till here 3")
 	})
 
 	//add new user

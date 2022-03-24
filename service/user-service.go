@@ -20,6 +20,7 @@ func New() UserService {
 
 func (i *userService) Save(user entity.User) entity.User {
 	i.users = append(i.users, user)
+	db.SaveUser(user)
 	return user
 }
 

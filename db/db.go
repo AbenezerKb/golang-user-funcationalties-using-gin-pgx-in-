@@ -3,6 +3,7 @@ package db
 import (
 	"context"
 	"fmt"
+	"gin-exercise/entity"
 	"log"
 	"os"
 
@@ -60,6 +61,44 @@ func Userslist() []string {
 	}
 
 	return users
+}
+
+func SaveUser(user entity.User) {
+
+	databaseUrl := "postgresql://postgres:abeny@localhost:5432/Exersice"
+
+	// this returns connection pool
+	DbPool, err := pgxpool.Connect(context.Background(), databaseUrl)
+
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
+		os.Exit(1)
+	}
+
+	defer DbPool.Close()
+	fmt.Println(user)
+	resulte, err := DbPool.Exec(context.Background(), "INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)", user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password)
+	fmt.Println(resulte)
+	if err != nil {
+		log.Fatal("error while executing query")
+	}
+
+	// users := []string{}
+
+	// iterate through the rows
+	// for rows.Next() {
+	//var r entity.User
+	// err := rows.Scan(&r.FirstName, &r.SecondName, &r.Age, &r.Email)
+	// fmt.Println(r)
+	// values, err := rows.Values()
+	// if err != nil {
+	// 	log.Fatal("error while iterating dataset")
+	// }
+
+	// users = append(users, fmt.Sprintf("%v", values))
+	// }
+
+	//	return users
 }
 
 func users(email string, password string) bool {
