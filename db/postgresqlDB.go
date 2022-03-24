@@ -11,6 +11,12 @@ import (
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
+var (
+	listAll = "SELECT * FROM person;"
+	getUser = "SELECT * FROM person WHERE email = $1 AND password = $2"
+	insert  = "INSERT INTO person(first_name, second_name, age, email, profile, password, address, phonenumber) VALUES($1,$2,$3,$4,$5,$6,$7,$8)"
+)
+
 func connectDB() (c *pgx.Conn, err error) {
 	postgres := "postgresql://postgres:abeny@localhost:5432/goapi"
 	conn, err := pgx.Connect(context.Background(), postgres)
@@ -77,7 +83,9 @@ func SaveUser(user entity.User) {
 
 	defer DbPool.Close()
 	fmt.Println(user)
-	resulte, err := DbPool.Exec(context.Background(), "INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)", user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password)
+	resulte, err := DbPool.Exec(context.Background(), insert, user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password, user.Address, user.PhoneNumber)
+	//"INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)"
+
 	fmt.Println(resulte)
 	if err != nil {
 		log.Fatal("error while executing query")
