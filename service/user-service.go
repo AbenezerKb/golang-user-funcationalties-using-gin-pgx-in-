@@ -25,7 +25,7 @@ func New() UserService {
 func (i *userService) Save(user entity.User) (*entity.User, *rest_error.RestErr) {
 	pw, err := bcrypt.GenerateFromPassword([]byte(user.Password), 14)
 	if err != nil {
-		return nil, rest_error.NewBadRequestError("password encryption falied")
+		return nil, rest_error.NewInternalServerError("password encryption falied")
 	}
 	user.Password = string(pw[:])
 	fmt.Println(user)

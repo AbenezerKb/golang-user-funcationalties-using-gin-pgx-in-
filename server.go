@@ -5,7 +5,6 @@ import (
 	"gin-exercise/middlewares"
 	"gin-exercise/service"
 	"io"
-	"net/http"
 	"os"
 
 	//ginDumb "github.com/tpkeeper/gin-dumb"
@@ -17,9 +16,11 @@ import (
 var (
 	services service.UserService       = service.New()
 	controll controller.UserController = controller.New(services)
-	//loginService    service.LoginService       = service.StaticLoginService()
-	//jwtService      service.JWTService         = service.JWTAuthService()
-	//loginController controller.LoginController = controller.LoginHandler(loginService, jwtService)
+	//kk controller.LoginController
+	loginService    service.LoginService       = &service.UserLogin{}
+	jwtService      service.JWTService         = service.JWTAuthService()
+	loginController controller.LoginController = controller.LoginHandler(loginService, jwtService)
+	//loginController :=controller.LoginController {}
 )
 
 func setUptLogOutPut() {
@@ -36,35 +37,13 @@ func main() {
 	server.Use(gin.Recovery(), middlewares.Logger()) //, ginDumb.Dumb() , middlewares.AuthorizeJWT()
 
 	//get users list
-	server.GET("/userslist", func(ctx *gin.Context) {
-		ctx.JSON(200, controll.FindAll())
-	})
+	server.GET("/userslist", controll.FindAll)
 
 	//add new user
-	server.POST("/users", func(ctx *gin.Context) {
-		err := controll.Save(ctx)
-		if err != nil {
-			ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
-		} else {
-			ctx.JSON(http.StatusOK, gin.H{"Message": "user input is valid!"})
-		}
-
-		ctx.JSON(200, controll.Save(ctx))
-	})
+	server.POST("/users", controll.Save)
 
 	//login
-	server.POST("/login", func(ctx *gin.Context) {
-		token := "loginController.Login(ctx)"
-		if token != "" {
-			ctx.JSON(http.StatusOK, gin.H{
-				"token": token,
-			})
-		} else {
-			ctx.JSON(http.StatusUnauthorized, nil)
-		}
-
-		ctx.JSON(200, controll.Save(ctx))
-	})
+	server.POST("/login", loginController.Login)
 
 	server.Run(":8080")
 }

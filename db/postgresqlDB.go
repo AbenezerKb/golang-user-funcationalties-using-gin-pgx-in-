@@ -4,11 +4,14 @@ import (
 	"context"
 	"fmt"
 	"gin-exercise/entity"
+	rest_error "gin-exercise/error"
 	"log"
 	"os"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
+	"golang.org/x/crypto/bcrypt"
+	//"google.golang.org/protobuf/internal/errors"
 )
 
 var (
@@ -48,7 +51,7 @@ func Userslist() []string {
 
 	rows, err := DbPool.Query(context.Background(), "select * from person")
 	if err != nil {
-		log.Fatal("error while executing query")
+		rest_error.NewInternalServerError("error while executing query")
 	}
 
 	users := []string{}
@@ -60,7 +63,7 @@ func Userslist() []string {
 		// fmt.Println(r)
 		values, err := rows.Values()
 		if err != nil {
-			log.Fatal("error while iterating dataset")
+			rest_error.NewInternalServerError("error while iterating dataset from DB")
 		}
 
 		users = append(users, fmt.Sprintf("%v", values))
@@ -83,12 +86,12 @@ func SaveUser(user entity.User) {
 
 	defer DbPool.Close()
 	fmt.Println(user)
-	resulte, err := DbPool.Exec(context.Background(), insert, user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password, user.Address, user.PhoneNumber)
-	//"INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)"
-
-	fmt.Println(resulte)
+	result, err := DbPool.Exec(context.Background(), insert, "INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)")
+	//user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password, user.Address, user.PhoneNumber
+	//
+	log.Print(result)
 	if err != nil {
-		log.Fatal("error while executing query")
+		rest_error.NewInternalServerError("error while executing query")
 	}
 
 	// users := []string{}
@@ -109,7 +112,7 @@ func SaveUser(user entity.User) {
 	//	return users
 }
 
-func users(email string, password string) bool {
+func UserInfo(email string, password string) bool {
 
 	databaseUrl := "postgresql://postgres:abeny@localhost:5432/Exersice"
 
@@ -117,29 +120,37 @@ func users(email string, password string) bool {
 	DbPool, err := pgxpool.Connect(context.Background(), databaseUrl)
 
 	if err != nil {
+
 		fmt.Fprintf(os.Stderr, "Unable to connect to database: %v\n", err)
-		os.Exit(1)
+		rest_error.NewInternalServerError("database error!")
+		return false
 	}
 
 	defer DbPool.Close()
-
-	rows, err := DbPool.Query(context.Background(), "select email, password from person where email = %v AND password = %v", email, password)
+	hashedPW, err := bcrypt.GenerateFromPassword([]byte(password), 14)
+	rows, err := DbPool.Query(context.Background(), "select * from person where email = $1 AND password = $2 ", email, string(hashedPW[:]))
 	if err != nil {
-		log.Fatal("error while executing query")
+
+		rest_error.NewInternalServerError("database error!")
+		return false
 	}
 
-	users := []string{}
+	//users := []string{}
 
 	// iterate through the rows
+	var user entity.User
+	fmt.Println("after quesry")
 	for rows.Next() {
-		values, err := rows.Values()
+		//values, err := rows.Values()
+		rows.Scan(&user)
+		fmt.Println("user: ", user)
 		if err != nil {
-			log.Fatal("error while iterating dataset")
+			rest_error.NewInternalServerError("database error!")
 			return false
 		}
-		fmt.Println("values: ", values)
+		//fmt.Println("values: ", values)
 
-		users = append(users, fmt.Sprintf("%v", values))
+		//users = append(users, fmt.Sprintf("%v", values))
 	}
 
 	return true

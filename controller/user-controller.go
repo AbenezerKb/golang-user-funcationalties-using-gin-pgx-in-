@@ -2,14 +2,16 @@ package controller
 
 import (
 	"gin-exercise/entity"
+	rest_error "gin-exercise/error"
 	"gin-exercise/service"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type UserController interface {
-	FindAll() []string
-	Save(ctx *gin.Context) error
+	FindAll(ctx *gin.Context)
+	Save(ctx *gin.Context)
 }
 
 type controller struct {
@@ -20,16 +22,19 @@ func New(service service.UserService) UserController {
 	return controller{service: service}
 }
 
-func (c controller) FindAll() []string {
-	return c.service.FindAll()
+func (c controller) FindAll(ctx *gin.Context) {
+
+	ctx.JSON(200, c.service.FindAll())
+
 }
 
-func (c controller) Save(ctx *gin.Context) error {
+func (c controller) Save(ctx *gin.Context) {
 	var user entity.User
+
 	err := ctx.ShouldBindJSON(&user)
 	if err != nil {
-		return err
+		rest_error.NewBadRequestError(("error, registration failed"))
 	}
 	c.service.Save(user)
-	return nil
+	ctx.JSON(http.StatusOK, gin.H{"Message": "user input is valid!"})
 }

@@ -12,8 +12,8 @@ type User struct {
 }
 
 type LoginInfo struct {
-	Username string `binding:"username"`
-	Password string `binding:"password"`
+	Email    string `json:"email" binding:"email"`
+	Password string `json:"password" binding:"required"`
 }
 
 // type Item struct {

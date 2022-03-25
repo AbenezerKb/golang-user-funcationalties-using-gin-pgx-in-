@@ -1,7 +1,15 @@
 package service
 
+import (
+	"gin-exercise/db"
+)
+
 type LoginService interface {
-	Login(username string, password string) bool
+	Login(email string, password string) bool
+}
+
+func NewLogin() LoginService {
+	return &UserLogin{}
 }
 
 type UserLogin struct {
@@ -9,7 +17,6 @@ type UserLogin struct {
 	Password string `json:"password" binding:"required"`
 }
 
-func (u *UserLogin) Login(username string, password string) bool {
-	return u.Username == username &&
-		u.Password == password
+func (u *UserLogin) Login(email string, password string) bool {
+	return db.UserInfo(email, password)
 }
