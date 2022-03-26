@@ -18,13 +18,23 @@ type controller struct {
 	service service.UserService
 }
 
+var (
+	loginService         service.LoginService = &service.UserLogin{}
+	jwtService           service.JWTService   = service.JWTAuthService()
+	loginValidController LoginController      = LoginHandler(loginService, jwtService)
+)
+
 func New(service service.UserService) UserController {
 	return controller{service: service}
 }
 
 func (c controller) FindAll(ctx *gin.Context) {
 
+	//if loginValidController.ValidateToken(string(ctx.Request.Header["token"][0])) {
 	ctx.JSON(200, c.service.FindAll())
+	//		return
+	// }
+	// rest_error.NewUnAutherizedError("not authorized")
 
 }
 

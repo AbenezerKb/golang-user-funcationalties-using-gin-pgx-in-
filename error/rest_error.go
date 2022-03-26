@@ -23,3 +23,11 @@ func NewBadRequestError(message string) *RestErr {
 		Error:   "bad_request_error",
 	}
 }
+
+func NewUnAutherizedError(message string) *RestErr {
+	return &RestErr{
+		Message: message,
+		Status:  http.StatusUnauthorized,
+		Error:   "unauthorized_user_error",
+	}
+}

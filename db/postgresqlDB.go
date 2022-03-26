@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"gin-exercise/entity"
 	rest_error "gin-exercise/error"
-	"log"
 	"os"
 
 	"github.com/jackc/pgx/v4"
@@ -86,10 +85,10 @@ func SaveUser(user entity.User) {
 
 	defer DbPool.Close()
 	fmt.Println(user)
-	result, err := DbPool.Exec(context.Background(), insert, "INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)")
+	result, err := DbPool.Exec(context.Background(), insert, user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password, user.Address, user.PhoneNumber)
 	//user.FirstName, user.SecondName, user.Age, user.Email, user.Profile, user.Password, user.Address, user.PhoneNumber
-	//
-	log.Print(result)
+	//"INSERT INTO person(first_name, second_name, age, email, profile, password) VALUES($1,$2,$3,$4,$5,$6)"
+	fmt.Println("after exectution", result)
 	if err != nil {
 		rest_error.NewInternalServerError("error while executing query")
 	}
@@ -139,7 +138,7 @@ func UserInfo(email string, password string) bool {
 
 	// iterate through the rows
 	var user entity.User
-	fmt.Println("after quesry")
+
 	for rows.Next() {
 		//values, err := rows.Values()
 		rows.Scan(&user)

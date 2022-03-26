@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"gin-exercise/entity"
 	rest_error "gin-exercise/error"
 	"gin-exercise/service"
@@ -12,6 +13,7 @@ import (
 //login contorller interface
 type LoginController interface {
 	Login(ctx *gin.Context)
+	ValidateToken(string) bool
 }
 
 type loginController struct {
@@ -41,6 +43,7 @@ func (controller loginController) Login(ctx *gin.Context) {
 		token := controller.jWtService.GenerateToken(credential.Email)
 
 		if token != "" {
+
 			ctx.JSON(http.StatusOK, gin.H{
 				"token": token,
 			})
@@ -52,4 +55,19 @@ func (controller loginController) Login(ctx *gin.Context) {
 
 	}
 
+}
+
+func (controller loginController) ValidateToken(token string) bool {
+	newToken, err := controller.jWtService.ValidateToken(token)
+	if err != nil {
+		rest_error.NewUnAutherizedError("not authorized")
+
+		return false
+	}
+
+	if newToken != nil {
+		fmt.Println("authorized")
+
+	}
+	return true
 }

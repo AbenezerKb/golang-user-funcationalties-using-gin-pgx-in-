@@ -18,5 +18,6 @@ type UserLogin struct {
 }
 
 func (u *UserLogin) Login(email string, password string) bool {
+
 	return db.UserInfo(email, password)
 }

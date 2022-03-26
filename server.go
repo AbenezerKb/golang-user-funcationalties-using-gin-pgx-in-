@@ -4,8 +4,7 @@ import (
 	"gin-exercise/controller"
 	"gin-exercise/middlewares"
 	"gin-exercise/service"
-	"io"
-	"os"
+	"path"
 
 	//ginDumb "github.com/tpkeeper/gin-dumb"
 
@@ -16,28 +15,25 @@ import (
 var (
 	services service.UserService       = service.New()
 	controll controller.UserController = controller.New(services)
-	//kk controller.LoginController
+
 	loginService    service.LoginService       = &service.UserLogin{}
 	jwtService      service.JWTService         = service.JWTAuthService()
 	loginController controller.LoginController = controller.LoginHandler(loginService, jwtService)
-	//loginController :=controller.LoginController {}
+
+	imgservices service.ImageService       = service.NewImage()
+	imgcontroll controller.ImageController = controller.NewImage(imgservices)
 )
-
-func setUptLogOutPut() {
-	file, _ := os.Create("gin.log")
-	gin.DefaultWriter = io.MultiWriter(file, os.Stdout)
-	//gin.DefaultWriter := io.MultiWriter(file,os.Stdout)
-
-	//gin.DefaultWriter := io.MultiWriter(file, os.Stdout)
-}
 
 func main() {
 	//setUptLogOutPut()
 	server := gin.New()
+
+	server.Static("/v1/image", "./")
+
 	server.Use(gin.Recovery(), middlewares.Logger()) //, ginDumb.Dumb() , middlewares.AuthorizeJWT()
 
 	//get users list
-	server.GET("/userslist", controll.FindAll)
+	server.GET("/users", controll.FindAll)
 
 	//add new user
 	server.POST("/users", controll.Save)
@@ -45,5 +41,11 @@ func main() {
 	//login
 	server.POST("/login", loginController.Login)
 
+	//image upload
+	server.POST("/user/:userid/upload_image", imgcontroll.ImageSave)
+
+	//access image
+	//server.GET("/image/:userid", imgcontroll.Display_image)
+	server.Static("/image", path.Join("v1", "image"))
 	server.Run(":8080")
 }
