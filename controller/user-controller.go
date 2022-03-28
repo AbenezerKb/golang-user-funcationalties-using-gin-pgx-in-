@@ -30,11 +30,13 @@ func New(service service.UserService) UserController {
 
 func (c controller) FindAll(ctx *gin.Context) {
 
-	//if loginValidController.ValidateToken(string(ctx.Request.Header["token"][0])) {
-	ctx.JSON(200, c.service.FindAll())
-	//		return
-	// }
-	// rest_error.NewUnAutherizedError("not authorized")
+	if loginValidController.ValidateToken(ctx.GetHeader("token")) {
+		ctx.JSON(200, c.service.FindAll())
+		return
+
+	}
+
+	rest_error.NewUnAutherizedError("not authorized")
 
 }
 
